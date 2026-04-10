@@ -17,8 +17,18 @@ export default {
       },
       fontFamily: {
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
-      }
+      },
+      textShadow: {
+        sm: '0 0 4px rgba(255,255,255,0.3)',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ matchUtilities, theme }) {
+      matchUtilities(
+        { 'text-shadow': (value) => ({ textShadow: value }) },
+        { values: theme('textShadow') }
+      )
+    },
+  ],
 }

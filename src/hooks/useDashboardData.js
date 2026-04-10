@@ -44,7 +44,7 @@ export function useDashboardData() {
             result,
             details: `${tool} scan completed`
           };
-          return [...prev, newEvent];
+          return [...prev, newEvent].slice(-100);
         });
       }, 4000);
       

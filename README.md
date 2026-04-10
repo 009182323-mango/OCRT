@@ -1,4 +1,4 @@
-# 🦞 Operation Claw & Order
+# Operation Claw & Order
 
 > **A real-time cybersecurity operations dashboard for monitoring offensive security exercises.**
 
@@ -6,240 +6,252 @@ Operation Claw & Order is a high-density, single-page React application designed
 
 ---
 
-## 📸 Features
+## Features
 
 - **Live Team Monitoring** — Track 12+ teams simultaneously with real-time status indicators (Online / Degraded / Offline / Unknown)
-- **Attack Phase Visualization** — Visual progress bars showing each team's current incursion phase (Phases 1–3)
-- **Active Operations Feed** — See the last command or tool each team executed (e.g. `nmap -sS`, `Hydra ssh brute force`, `Metasploit handler active`)
+- **Attack Phase Visualization** — Visual progress bars showing each team's current incursion phase (Phases 1-3)
+- **Active Operations Feed** — See the last command or tool each team executed
 - **Live Telemetry Stream** — A scrolling terminal-style activity feed showing the 20 most recent events with color-coded results (SUCCESS / FAILED / BLOCKED)
-- **Overall System Health Badge** — Aggregated fleet status: ALL SYSTEMS GO → DEGRADED → CRITICAL
+- **Overall System Health Badge** — Aggregated fleet status: ALL SYSTEMS GO / DEGRADED / CRITICAL
 - **Real-Time Clock** — UTC/local timestamp prominently displayed in the header
 - **Client-Side Search** — Instantly filter teams by designation with a search bar
 - **Responsive Dark Theme** — Custom Tailwind color palette designed for low-light environments and large displays
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 | Layer        | Technology                                  |
 | ------------ | ------------------------------------------- |
 | **Framework**| React 19 (via Vite 8)                       |
 | **Styling**  | Tailwind CSS 3.4 + custom dark theme tokens |
 | **Icons**    | Lucide React                                |
-| **Bundler**  | Vite 8                                      |
-| **Linting**  | ESLint 9 + React Hooks plugin               |
+| **Backend**  | Node.js + Express 5                         |
+| **Database** | PostgreSQL (optional, for event persistence)|
 | **Hosting**  | Heroku                                      |
-| **Backend**  | Node.js + Express                           |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 operation-claw-and-order/
-├── index.html                  # App shell — loads /src/main.jsx
+├── index.html                  # App shell
 ├── package.json                # Dependencies & scripts
-├── vite.config.js              # Vite configuration (React plugin)
+├── vite.config.js              # Vite config + dev proxy
 ├── tailwind.config.js          # Custom dark theme color tokens
 ├── postcss.config.js           # PostCSS + Tailwind + Autoprefixer
-├── eslint.config.js            # ESLint configuration
-├── .gitignore
-├── .env.example                # Template for environment vars
-├── Procfile                    # Heroku deployment configuration
+├── Procfile                    # Heroku: web: npm start
+├── .env.example                # Template for environment variables
 │
 ├── public/
 │   ├── favicon.svg             # Tab icon
 │   └── icons.svg               # Icon sprite sheet
 │
 ├── server/
-│   └── index.js                # Express backend server & API routes
+│   ├── index.js                # Express server, API routes, auth
+│   └── db.js                   # PostgreSQL connection & queries
 │
-├── src/
-│   ├── main.jsx                # React entry point
-│   ├── index.css               # Tailwind directives + global styles
-│   ├── App.jsx                 # Legacy root (unused)
-│   ├── App.css                 # Legacy styles (unused)
-│   ├── mockData.js             # 12 mock teams + 20 mock events
-│   │
-│   ├── components/
-│   │   ├── App.jsx             # Root component — layout orchestrator
-│   │   ├── HeaderBar.jsx       # Title bar, fleet metric, clock, status badge
-│   │   ├── StatusBadge.jsx     # ALL SYSTEMS GO / DEGRADED / CRITICAL badge
-│   │   ├── TeamList.jsx        # Searchable, scrollable team table
-│   │   ├── TeamRow.jsx         # Individual team row with live "last seen" timer
-│   │   ├── ActivityFeed.jsx    # Scrolling telemetry terminal (20 events max)
-│   │   └── EventRow.jsx        # Single event line in the activity feed
-│   │
-│   ├── hooks/
-│   │   └── useDashboardData.js # Data layer — mock fallback + API polling
-│   │
-│   └── assets/
-│       ├── hero.png
-│       ├── react.svg
-│       └── vite.svg
-│
-├── dashboard/                  # Auxiliary dashboard experiments
-└── pp/                         # Auxiliary project files
+└── src/
+    ├── main.jsx                # React entry point
+    ├── index.css               # Tailwind directives + scrollbar styles
+    ├── mockData.js             # 12 mock teams + 20 mock events
+    ├── components/
+    │   ├── App.jsx             # Root layout orchestrator
+    │   ├── HeaderBar.jsx       # Title, fleet metric, clock, status badge
+    │   ├── StatusBadge.jsx     # ALL SYSTEMS GO / DEGRADED / CRITICAL
+    │   ├── TeamList.jsx        # Searchable, scrollable team table
+    │   ├── TeamRow.jsx         # Team row with live "last seen" timer
+    │   ├── ActivityFeed.jsx    # Scrolling telemetry terminal
+    │   └── EventRow.jsx        # Single event line in the feed
+    ├── hooks/
+    │   └── useDashboardData.js # Mock fallback + API polling
+    └── assets/
+        └── hero.png
 ```
 
 ---
 
-## 🎨 Theme Configuration
+## Deployment to Heroku
 
-The project uses a custom Tailwind CSS dark theme optimized for tactical displays:
+### 1. Create the Heroku app
 
-```js
-// tailwind.config.js
-colors: {
-  background: '#0A0F1E',   // Deep navy — main background
-  surface:    '#111827',    // Elevated panels & cards
-  primary:    '#4D9AFF',    // Electric blue — accents & interactive
-  success:    '#00FF9F',    // Neon green — online / success states
-  warning:    '#FFB800',    // Amber — degraded / failed states
-  danger:     '#FF4757',    // Red — offline / blocked states
-  muted:      '#4B5563',    // Subdued gray — labels & secondary text
-}
+```bash
+heroku create your-app-name
+```
+
+### 2. Add Heroku Postgres (recommended)
+
+Without this, events are stored in memory and lost on every dyno restart.
+
+```bash
+heroku addons:create heroku-postgresql:essential-0
+```
+
+This automatically sets `DATABASE_URL` for you.
+
+### 3. Set config vars
+
+**All config vars must be set BEFORE the first deploy** because `VITE_API_URL` is baked into the frontend at build time.
+
+```bash
+# Required: Your Heroku Platform API key (to fetch team app statuses)
+heroku config:set HEROKU_API_KEY=your-heroku-api-key
+
+# Required: Only show Heroku apps matching this prefix as teams
+# e.g. if team apps are named ocrt-team-01, ocrt-team-02, etc.
+heroku config:set TEAM_APP_PREFIX=ocrt-
+
+# Required: The public URL of this app (so the frontend can reach the API)
+heroku config:set VITE_API_URL=https://your-app-name.herokuapp.com
+
+# Recommended: Protect the event POST endpoint with an API key
+heroku config:set EVENT_API_KEY=a-strong-random-secret
+
+# Required: Ensure devDependencies (Vite, Tailwind) are installed during build
+heroku config:set NPM_CONFIG_PRODUCTION=false
+```
+
+### 4. Deploy
+
+```bash
+git push heroku main
+```
+
+### 5. Verify
+
+```bash
+heroku open
+heroku logs --tail
 ```
 
 ---
 
-## 🚀 Getting Started
+## Environment Variables
+
+| Variable            | Required | Description                                                       |
+| ------------------- | -------- | ----------------------------------------------------------------- |
+| `HEROKU_API_KEY`    | Yes      | Heroku Platform API key — used to fetch team app statuses         |
+| `TEAM_APP_PREFIX`   | Yes      | Only Heroku apps whose name starts with this prefix appear as teams |
+| `VITE_API_URL`      | Yes*     | Backend URL for the frontend to call. If empty, uses mock data    |
+| `EVENT_API_KEY`     | Recommended | Bearer token required for `POST /api/events`. If empty, endpoint is open |
+| `DATABASE_URL`      | Recommended | PostgreSQL connection string (auto-set by Heroku Postgres addon)  |
+| `PORT`              | No       | Server port (Heroku sets this automatically; defaults to 3001)    |
+| `NPM_CONFIG_PRODUCTION` | Yes  | Must be `false` so Heroku installs devDependencies for the build  |
+
+*If `VITE_API_URL` is not set, the dashboard runs in mock mode with synthetic data.
+
+---
+
+## Local Development
 
 ### Prerequisites
 
-- **Node.js** ≥ 18
-- **npm** ≥ 9
+- Node.js >= 20
+- npm >= 9
 
-### Install & Run
+### Quick start
 
 ```bash
-# Clone the repository
-git clone https://github.com/009182323-mango/completeco.git
-cd completeco
-
-# Install dependencies
+git clone https://github.com/009182323-mango/OCRT.git
+cd OCRT
 npm install
+cp .env.example .env
 ```
 
-### Running Locally
-
-You can run the frontend and backend in different modes:
+### Running locally
 
 ```bash
-# 1. Frontend Development Mode (localhost:5173)
+# Frontend only (mock mode, port 5173)
 npm run dev
 
-# 2. Backend API Server Development (localhost:3001)
+# Backend only (port 3001)
 npm run server
 
-# 3. Full Production Simulation (Build frontend & serve via Express on 3001)
+# Full stack dev — Vite proxies /api to localhost:3001
+# Run both commands in separate terminals:
+npm run dev
+npm run server
+
+# Production simulation (build + serve on 3001)
 npm run build-start
 ```
 
-The dashboard will be live at **http://localhost:5173/**
+The Vite dev server automatically proxies `/api/*` requests to `localhost:3001`, so you don't need to set `VITE_API_URL` during local development.
 
-### Environment Variables
+---
 
-| Variable        | Description                          | Default        |
-| --------------- | ------------------------------------ | -------------- |
-| `VITE_API_URL`  | Backend API base URL for live data   | *(empty — uses mock data)* |
+## API Endpoints
 
-To connect to a live backend:
+| Method | Endpoint       | Auth             | Description                         |
+| ------ | -------------- | ---------------- | ----------------------------------- |
+| GET    | `/api/health`  | None             | Health check + persistence status   |
+| GET    | `/api/status`  | None             | Array of team objects from Heroku   |
+| GET    | `/api/events`  | None             | Last 100 events                     |
+| POST   | `/api/events`  | Bearer token*    | Submit a new event                  |
+
+*Only enforced when `EVENT_API_KEY` is set.
+
+### POST /api/events body
+
+```json
+{
+  "team_id": "ocrt-team-01",
+  "tool": "Nmap",
+  "target": "10.0.1.5",
+  "result": "SUCCESS",
+  "details": "Port 22, 80 open"
+}
+```
+
+### POST /api/events with auth
 
 ```bash
-# Create a .env file in the project root
-echo "VITE_API_URL=https://your-api.herokuapp.com" > .env
+curl -X POST https://your-app.herokuapp.com/api/events \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-event-api-key" \
+  -d '{"team_id":"ocrt-team-01","tool":"Nmap","target":"10.0.1.5","result":"SUCCESS","details":"Port scan complete"}'
 ```
 
 ---
 
-## 📡 Data Layer
+## Scripts
 
-The `useDashboardData` hook supports two operating modes:
+| Command              | Description                              |
+| -------------------- | ---------------------------------------- |
+| `npm run dev`        | Start Vite dev server with HMR           |
+| `npm run server`     | Start Express backend with nodemon       |
+| `npm run build`      | Production build to `dist/`              |
+| `npm run build-start`| Build frontend and serve via Express     |
+| `npm start`          | Start Express backend (production mode)  |
+| `npm run lint`       | Run ESLint across all source files       |
 
-### Mock Mode (Default)
-When `VITE_API_URL` is not set, the dashboard renders 12 pre-configured teams and 20 simulated events from `mockData.js`. Data refreshes cosmetically on intervals to simulate liveness.
+---
+
+## Data Modes
+
+### Mock Mode (default)
+
+When `VITE_API_URL` is not set, the dashboard renders 12 pre-configured teams and 20 simulated events from `mockData.js`. New mock events are generated every 4 seconds, and online team statuses refresh every 15 seconds.
 
 ### Live API Mode
-When `VITE_API_URL` is set, the hook polls two endpoints:
+
+When `VITE_API_URL` is set, the hook polls the backend:
 
 | Endpoint          | Poll Interval | Description                    |
 | ----------------- | ------------- | ------------------------------ |
-| `GET /api/status` | 15 seconds    | Returns array of team objects  |
-| `GET /api/events` | 4 seconds     | Returns array of event objects |
+| `GET /api/status` | 15 seconds    | Array of team status objects   |
+| `GET /api/events` | 4 seconds     | Array of recent event objects  |
 
 ---
 
-## 🗺️ Roadmap
-
-### ✅ Completed
-
-- [x] React + Vite project scaffolding with Tailwind dark theme
-- [x] `HeaderBar` with live clock, fleet status metric, and overall health badge
-- [x] `TeamList` with sortable columns and client-side search filtering
-- [x] `TeamRow` with live "last seen" countdown, phase indicators, and blocked count
-- [x] `ActivityFeed` with auto-scrolling terminal and color-coded event results
-- [x] `StatusBadge` with animated glow states (ALL SYSTEMS GO / DEGRADED / CRITICAL)
-- [x] `useDashboardData` hook with mock fallback + API polling architecture
-- [x] Full project committed and pushed to GitHub
-
-### 🔜 Next Up — Backend & Deployment
-
-- [x] **Heroku Deployment** — Procfile and basic Express static serving configured
-- [x] **Backend API Server** — Node.js/Express backend structured with strict ES Modules (`"type": "module"`) and `__dirname` polyfills
-- [x] **Express Routing** — Resolved Express v5+ wildcard catching bugs by utilizing `app.use()` static fallback
-- [ ] **Database Integration** — Add PostgreSQL (Heroku Postgres) for persistent storage of team states and event logs
-- [ ] **Real-Time Data Ingestion** — Ingest live telemetry from exercise infrastructure (syslog, webhooks, or agent reporting)
-- [ ] **WebSocket Support** — Replace polling with WebSocket push for sub-second event delivery
-- [ ] **Authentication** — Protect the dashboard and API with token-based auth
-- [ ] **Historical Replay** — Store and replay past exercise sessions from the database
-- [ ] **Alerting System** — Push notifications when a team goes offline or enters CRITICAL state
-
----
-
-## 🔐 Heroku Deployment (Planned)
-
-To deploy on Heroku, the following steps are needed:
-
-1. **Create a Heroku app** and add the `heroku/nodejs` buildpack
-2. **Set environment variables** via the Heroku dashboard or CLI:
-   ```bash
-   heroku config:set VITE_API_URL=https://your-app.herokuapp.com
-   ```
-3. **Add a `Procfile`** to boot the Express API wrapper:
-   ```
-   web: npm start
-   ```
-4. **Add Heroku Postgres** for backend persistence:
-   ```bash
-   heroku addons:create heroku-postgresql:essential-0
-   ```
-5. **Set the Heroku API key** as a GitHub Actions secret for CI/CD *(if automating deployments)*
-
-> ⚠️ **Note:** The Heroku API key is required for programmatic deployments. Never commit API keys to the repository. Use environment variables or a secrets manager.
-
----
-
-## 🧪 Scripts
-
-| Command           | Description                              |
-| ----------------- | ---------------------------------------- |
-| `npm run dev`     | Start Vite dev server with HMR           |
-| `npm run server`  | Start Express backend with nodemon       |
-| `npm run build`   | Production build to `dist/`              |
-| `npm run build-start`| Build frontend and serve via Express  |
-| `npm start`       | Start Express backend (production mode)  |
-| `npm run lint`    | Run ESLint across all source files       |
-
----
-
-## 📜 License
+## License
 
 This project was built as part of a cybersecurity training exercise. All mock data is synthetic and does not represent real infrastructure.
 
 ---
 
 <p align="center">
-  <strong>🔒 OPERATION CLAW & ORDER 🔒</strong><br>
+  <strong>OPERATION CLAW & ORDER</strong><br>
   <em>"Eyes on every vector. Control every phase."</em>
 </p>

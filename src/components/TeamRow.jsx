@@ -9,7 +9,8 @@ const TeamRow = ({ team }) => {
     const updateTime = () => {
       const diffInSeconds = Math.floor((new Date() - new Date(team.last_seen)) / 1000);
       if (diffInSeconds < 60) setLastSeenStr(`${diffInSeconds}s ago`);
-      else setLastSeenStr(`${Math.floor(diffInSeconds / 60)}m ago`);
+      else if (diffInSeconds < 3600) setLastSeenStr(`${Math.floor(diffInSeconds / 60)}m ago`);
+      else setLastSeenStr(`${Math.floor(diffInSeconds / 3600)}h ${Math.floor((diffInSeconds % 3600) / 60)}m ago`);
     };
     
     updateTime();
