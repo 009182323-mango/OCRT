@@ -16,14 +16,36 @@ export function useDashboardData() {
     if (!apiUrl) {
       // Use Mock Data
       setLoading(false);
-      
-      // Simulate real-time mock data updates
+
+      // Simulate real-time team status updates: refresh last_seen for online teams
       statusInterval = setInterval(() => {
-        setTeams(prev => [...prev]);
+        setTeams(prev => prev.map(team =>
+          team.status === 'online'
+            ? { ...team, last_seen: new Date().toISOString(), event_count: team.event_count + 1 }
+            : team
+        ));
       }, 15000);
-      
+
+      // Simulate incoming telemetry events
+      const tools = ['Nmap', 'Metasploit', 'Hydra', 'Custom', 'SQLMap', 'Gobuster'];
+      const results = ['SUCCESS', 'FAILED', 'BLOCKED'];
       eventsInterval = setInterval(() => {
-        setEvents(prev => [...prev]);
+        setEvents(prev => {
+          const teamIds = ['TEAM_01','TEAM_02','TEAM_03','TEAM_05','TEAM_07','TEAM_08','TEAM_09','TEAM_11','TEAM_12'];
+          const tool = tools[Math.floor(Math.random() * tools.length)];
+          const result = results[Math.floor(Math.random() * results.length)];
+          const teamId = teamIds[Math.floor(Math.random() * teamIds.length)];
+          const newEvent = {
+            id: `evt_mock_${Date.now()}`,
+            team_id: teamId,
+            timestamp: new Date().toISOString(),
+            tool,
+            target: `10.0.${Math.floor(Math.random() * 12) + 1}.${Math.floor(Math.random() * 254) + 1}`,
+            result,
+            details: `${tool} scan completed`
+          };
+          return [...prev, newEvent];
+        });
       }, 4000);
       
     } else {

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "start": "node server/index.js",
     "server": "nodemon server/index.js",
-    "build-start": "npm run build && npm start"
+    "build-start": "npm run build && npm start",
+    "heroku-postbuild": "npm run build"
   },
   "engines": {
     "node": "20.x"
